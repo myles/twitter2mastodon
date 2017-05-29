@@ -19,7 +19,7 @@ def twitter():
 def post_toot(text):
     mastodon = Mastodon(client_id='twitter2mastodon_client_cred.txt',
                         access_token='twitter2mastodon_user_cred.txt',
-                        api_base_url='https://myles.life/')
+                        api_base_url=config['mastodon_api_base_url'])
     return mastodon.toot(text)
 
 
