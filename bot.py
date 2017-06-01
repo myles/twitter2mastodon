@@ -9,31 +9,42 @@ with open(join(dirname(realpath(__file__)), 'config.json')) as fobj:
     config = json.loads(fobj.read())
 
 
-def twitter():
-    auth = tweepy.OAuthHandler(**config['twitter_auth'])
-    auth.set_access_token(**config['twitter_access_token'])
-
-    return tweepy.API(auth)
-
-
-def post_toot(text):
-    mastodon = Mastodon(client_id='twitter2mastodon_client_cred.txt',
-                        access_token='twitter2mastodon_user_cred.txt',
-                        api_base_url=config['mastodon_api_base_url'])
+def post_toot(mastodon, text):
     return mastodon.toot(text)
 
 
-def get_timeline(since_id):
-    t = twitter()
-    return t.user_timeline(config['twitter_username'], since_id=since_id,
-                           exclude_replies=True, include_rts=False)
+def update_profile(mastodon, display_name, bio):
+    return mastodon.account_update_credentials(display_name=display_name,
+                                               note=bio)
+
+
+def get_timeline(twitter, since_id):
+    return twitter.user_timeline(config['twitter_username'], since_id=since_id,
+                                 exclude_replies=True, include_rts=False)
+
+
+def get_twitter_profile(twitter):
+    return twitter.me()
 
 
 def main():
     with open(join(dirname(realpath(__file__)), 'last_tweet.txt')) as fobj:
         last_tweet = fobj.read()
 
-    for tweet in get_timeline(last_tweet):
+    auth = tweepy.OAuthHandler(**config['twitter_auth'])
+    auth.set_access_token(**config['twitter_access_token'])
+
+    twitter = tweepy.API(auth)
+
+    mastodon = Mastodon(client_id='twitter2mastodon_client_cred.txt',
+                        access_token='twitter2mastodon_user_cred.txt',
+                        api_base_url=config['mastodon_api_base_url'])
+
+    profile = twitter.me()
+
+    update_profile(mastodon, profile.name, profile.description)
+
+    for tweet in get_timeline(twitter, last_tweet):
         text = tweet.text
 
         for url in tweet.entities.get('urls'):
@@ -47,7 +58,7 @@ def main():
                                      re.IGNORECASE)
             text = screen_name.sub(mention['screen_name'], mention['name'])
 
-        toot = post_toot(text)
+        toot = post_toot(mastodon, text)
 
         with open('tweet2toot.csv', 'a') as fobj:
             fobj.write('{0},{1},{2}'.format(tweet.id,
