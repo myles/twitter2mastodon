@@ -61,9 +61,9 @@ def main():
         toot = post_toot(mastodon, text)
 
         with open('tweet2toot.csv', 'a') as fobj:
-            fobj.write('{0},{1},{2}'.format(tweet.id,
-                                            toot['id'],
-                                            toot['url']))
+            fobj.write('{0},{1},{2}\n'.format(tweet.id,
+                                              toot['id'],
+                                              toot['url']))
 
         with open('last_tweet.txt', 'w') as fobj:
             fobj.write('{}'.format(tweet.id))
