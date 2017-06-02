@@ -56,7 +56,7 @@ def main():
         for mention in tweet.entities.get('user_mentions'):
             screen_name = re.compile(re.escape('@' + mention['screen_name']),
                                      re.IGNORECASE)
-            text = screen_name.sub(mention['screen_name'], mention['name'])
+            text = screen_name.sub(mention['name'], text)
 
         toot = post_toot(mastodon, text)
 
