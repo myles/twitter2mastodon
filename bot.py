@@ -51,7 +51,7 @@ def main():
             text = text.replace(url['url'], url['expanded_url'])
 
         for media in tweet.entities.get('media', []):
-            text = text.replace(media['url'], url['expanded_url'])
+            text = text.replace(media['url'], media['expanded_url'])
 
         for mention in tweet.entities.get('user_mentions'):
             screen_name = re.compile(re.escape('@' + mention['screen_name']),
